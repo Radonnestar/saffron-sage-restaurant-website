@@ -1,0 +1,318 @@
+/* ---------- the overlay ---------- */
+.intro-root {
+  --S: max(100vw, 100vh); /* the painting is a square, drawn as big as the longer side of the screen */
+  --vw: 100vw;
+  --vh: 100vh;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  background: #14110f;
+}
+@supports (height: 100dvh) {
+  .intro-root {
+    --S: max(100vw, 100dvh);
+    --vh: 100dvh;
+  }
+}
+.intro-root.is-exiting {
+  animation: intro-exit 0.7s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+@keyframes intro-exit {
+  to { clip-path: inset(0 0 100% 0); }
+}
+.intro-loading {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px;
+  border-radius: 50%;
+  background: #f5b53a;
+  animation: loading 1s ease-in-out infinite;
+}
+@keyframes loading {
+  0%, 100% { transform: scale(0.6); opacity: 0.5; }
+  50% { transform: scale(1.4); opacity: 1; }
+}
+
+/* ---------- one scene = one painting, with a slow camera move ---------- */
+.intro-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.scene-cam {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--S);
+  height: var(--S);
+  margin: calc(var(--S) / -2) 0 0 calc(var(--S) / -2);
+
+  /* How far the painting must slide so the point we want to look at ends up in the middle of the screen.
+     clamp() stops it sliding so far that an empty edge shows. */
+  --dx1: clamp(calc((var(--vw) - var(--S) * var(--z1)) / 2), calc((0.5 - var(--fx1)) * var(--S) * var(--z1)), calc((var(--S) * var(--z1) - var(--vw)) / 2));
+  --dy1: clamp(calc((var(--vh) - var(--S) * var(--z1)) / 2), calc((0.5 - var(--fy1)) * var(--S) * var(--z1)), calc((var(--S) * var(--z1) - var(--vh)) / 2));
+  --dx2: clamp(calc((var(--vw) - var(--S) * var(--z2)) / 2), calc((0.5 - var(--fx2)) * var(--S) * var(--z2)), calc((var(--S) * var(--z2) - var(--vw)) / 2));
+  --dy2: clamp(calc((var(--vh) - var(--S) * var(--z2)) / 2), calc((0.5 - var(--fy2)) * var(--S) * var(--z2)), calc((var(--S) * var(--z2) - var(--vh)) / 2));
+
+  animation: camera var(--dur) cubic-bezier(0.3, 0.1, 0.3, 1) both;
+  will-change: transform;
+}
+@keyframes camera {
+  from { transform: translate(var(--dx1), var(--dy1)) scale(var(--z1)); }
+  to { transform: translate(var(--dx2), var(--dy2)) scale(var(--z2)); }
+}
+.scene-inner {
+  position: absolute;
+  inset: 0;
+}
+.scene-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.beat { animation: beat 0.3s ease-in-out infinite; }
+@keyframes beat {
+  0%, 100% { transform: translateY(0); }
+  45% { transform: translateY(0.45%); }
+}
+
+/* ---------- how one scene replaces the one before it ---------- */
+.wipe-diag { animation: wipe-diag 0.8s cubic-bezier(0.7, 0, 0.2, 1) both; }
+@keyframes wipe-diag {
+  from { clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%); }
+  to { clip-path: polygon(-60% 0, 100% 0, 100% 100%, 0 100%); }
+}
+.wipe-iris { animation: wipe-iris 0.9s cubic-bezier(0.6, 0, 0.2, 1) both; }
+@keyframes wipe-iris {
+  from { clip-path: circle(0% at 50% 50%); }
+  to { clip-path: circle(80% at 50% 50%); }
+}
+.wipe-up { animation: wipe-up 0.8s cubic-bezier(0.7, 0, 0.2, 1) both; }
+@keyframes wipe-up {
+  from { clip-path: inset(100% 0 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+.wipe-low { animation: wipe-low 0.9s cubic-bezier(0.6, 0, 0.2, 1) both; }
+@keyframes wipe-low {
+  from { clip-path: circle(0% at 50% 100%); }
+  to { clip-path: circle(140% at 50% 100%); }
+}
+/* a band of warm light that sweeps across while the wipe happens */
+.leak {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 70%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: linear-gradient(100deg, transparent, rgba(255, 196, 96, 0.85), rgba(255, 140, 60, 0.4), transparent);
+  animation: leak 1s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes leak {
+  from { transform: translateX(-110%); opacity: 1; }
+  to { transform: translateX(170%); opacity: 0; }
+}
+
+/* ---------- effects laid on top of a painting ---------- */
+.fx {
+  position: absolute;
+  pointer-events: none;
+}
+.fx-glow {
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--c), 0.8) 0%, rgba(var(--c), 0.32) 38%, transparent 70%);
+  mix-blend-mode: screen;
+  animation-delay: var(--d);
+  animation-iteration-count: infinite;
+}
+.fx-flicker { animation-name: flicker; animation-duration: 1.7s; animation-timing-function: ease-in-out; }
+@keyframes flicker {
+  0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(0.92); }
+  30% { opacity: 0.95; transform: translate(-50%, -50%) scale(1.06); }
+  55% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.98); }
+  78% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.03); }
+}
+.fx-twinkle { animation-name: twinkle; animation-duration: 2.4s; animation-timing-function: ease-in-out; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.75); }
+  50% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.1); }
+}
+.fx-steam {
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 250, 240, 0.85), rgba(255, 250, 240, 0) 66%);
+  filter: blur(7px);
+  opacity: 0;
+  animation: steam 2.8s ease-out infinite var(--d);
+}
+@keyframes steam {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  25% { opacity: 0.6; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), -240%) scale(1.9); }
+}
+.fx-ripple {
+  border: 2px solid rgba(255, 228, 200, 0.75);
+  border-radius: 50%;
+  opacity: 0;
+  animation: ripple 1.1s ease-out infinite var(--d);
+}
+@keyframes ripple {
+  0% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.2); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+.fx-pulse {
+  border: 3px solid #f5b53a;
+  border-radius: 50%;
+  opacity: 0;
+  animation: pulse 1.3s ease-out infinite var(--d);
+}
+@keyframes pulse {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(0.4); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.7); }
+}
+.fx-wobble {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.fx-flash {
+  inset: 0;
+  clip-path: polygon(36.8% 43.7%, 65% 70.6%, 55.8% 63%, 41.5% 55.8%, 36.3% 51.8%);
+  background: linear-gradient(115deg, transparent 15%, rgba(255, 255, 255, 0.95) 50%, transparent 85%);
+  mix-blend-mode: soft-light;
+  animation: flash 0.3s ease-in-out infinite;
+}
+@keyframes flash {
+  0%, 100% { opacity: 0; }
+  45% { opacity: 0.9; }
+}
+.fx-leaf {
+  width: 3.4%;
+  height: 3.4%;
+  opacity: 0;
+  animation: leaf 0.9s ease-out infinite var(--d);
+}
+@keyframes leaf {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(0.5); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--lx), var(--ly)) rotate(var(--lr)) scale(1.1); }
+}
+.fx-mote {
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  background: rgba(255, 226, 160, 0.95);
+  box-shadow: 0 0 6px 2px rgba(255, 200, 100, 0.55);
+  opacity: 0;
+  animation: mote var(--t) linear infinite var(--d);
+}
+@keyframes mote {
+  0% { opacity: 0; transform: translate(0, 0); }
+  20% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(var(--mx), -16vmin); }
+}
+
+/* ---------- finishing touches ---------- */
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 52%, rgba(12, 6, 2, 0.6) 100%);
+}
+.grain {
+  position: absolute;
+  inset: -50%;
+  pointer-events: none;
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  animation: grain 0.8s steps(6) infinite;
+}
+@keyframes grain {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-3%, 2%); }
+  40% { transform: translate(2%, -3%); }
+  60% { transform: translate(-2%, -1%); }
+  80% { transform: translate(3%, 3%); }
+  100% { transform: translate(0, 0); }
+}
+.caption-shade {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 38%;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(10, 5, 2, 0.78), transparent);
+}
+.caption { animation: caption 0.8s ease-out 0.45s both; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.7); }
+@keyframes caption {
+  from { opacity: 0; transform: translateY(16px); }
+}
+.title-shade {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, rgba(14, 8, 3, 0.82), rgba(14, 8, 3, 0.5) 85%);
+  animation: shade 1s ease-out 0.9s both;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+}
+@keyframes shade {
+  from { opacity: 0; }
+}
+.title-in { animation: title-in 1s ease-out both; }
+@keyframes title-in {
+  from { opacity: 0; transform: translateY(22px) scale(0.96); }
+}
+.progress-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.progress {
+  height: 100%;
+  background: #f5b53a;
+  transform-origin: left;
+  animation: progress 11.3s linear both;
+}
+@keyframes progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.intro-skip {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 3;
+  padding: 8px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  color: #faf6ee;
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.intro-skip:hover {
+  background: rgba(245, 181, 58, 0.35);
+  border-color: #f5b53a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-root * { animation-duration: 0.01s !important; animation-delay: 0s !important; }
+}
