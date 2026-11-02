@@ -30,7 +30,7 @@ const scenes: Scene[] = [
   {
     id: 'stir',
     src: img('stir'),
-    at: 2.4,
+    at: 2.2,
     wipe: 'wipe-diag',
     caption: 'Slow-simmered with real saffron',
     from: { x: 0.4, y: 0.55, z: 1.02 },
@@ -39,7 +39,7 @@ const scenes: Scene[] = [
   {
     id: 'wine',
     src: img('wine'),
-    at: 4.6,
+    at: 4.3,
     wipe: 'wipe-iris',
     caption: 'Poured with care',
     from: { x: 0.52, y: 0.42, z: 1.02 },
@@ -48,7 +48,7 @@ const scenes: Scene[] = [
   {
     id: 'order',
     src: img('order'),
-    at: 6.9,
+    at: 6.4,
     wipe: 'wipe-up',
     caption: 'Your order, taken to heart',
     from: { x: 0.38, y: 0.56, z: 1.04 },
@@ -57,7 +57,7 @@ const scenes: Scene[] = [
   {
     id: 'serve',
     src: img('serve'),
-    at: 9.1,
+    at: 8.4,
     wipe: 'wipe-low',
     caption: 'Served at its very best',
     from: { x: 0.5, y: 0.52, z: 1.22 },
@@ -65,8 +65,29 @@ const scenes: Scene[] = [
   },
 ]
 
-const REVEAL_AT = 11.3 // the curtain starts to lift
-const END_AT = 12 // the intro is over
+/* A tiny four-pointed sparkle. */
+function Sparkle() {
+  return (
+    <svg viewBox="0 0 24 24" className="sparkle-svg">
+      <path d="M12 0 C12.6 7.4 16.6 11.4 24 12 C16.6 12.6 12.6 16.6 12 24 C11.4 16.6 7.4 12.6 0 12 C7.4 11.4 11.4 7.4 12 0Z" fill="#fff0bf" />
+    </svg>
+  )
+}
+
+/* A few quiet specks of light around the title. Their places come from a fixed formula, so they are the same on every visit. */
+const halo = Array.from({ length: 9 }, (_, i) => {
+  const angle = i * 2.399963 // the "golden angle", which spreads points evenly
+  const ring = 0.45 + ((i * 7) % 10) / 18
+  return {
+    left: 50 + Math.cos(angle) * ring * 40,
+    top: 50 + Math.sin(angle) * ring * 30,
+    size: 8 + ((i * 5) % 4) * 3,
+    delay: 1.4 + ((i * 3) % 9) * 0.45,
+  }
+})
+
+const REVEAL_AT = 10.6 // the darkness starts to dissolve
+const END_AT = 12.8 // the intro is over
 
 export default function Intro({ onReveal, onDone }: { onReveal: () => void; onDone: () => void }) {
   const [ready, setReady] = useState(false)
@@ -104,7 +125,7 @@ export default function Intro({ onReveal, onDone }: { onReveal: () => void; onDo
     }
   }, [])
 
-  // The timeline: switch scene at the right second, lift the curtain, then finish.
+  // The timeline: switch scene at the right second, let the darkness dissolve, then finish.
   useEffect(() => {
     if (!ready || skipped) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -138,61 +159,69 @@ export default function Intro({ onReveal, onDone }: { onReveal: () => void; onDo
   const last = scenes.length - 1
 
   return (
-    <div className={`intro-root ${exiting ? 'is-exiting' : ''}`} role="presentation">
-      {!ready && <span className="intro-loading" />}
+    <div className={`intro-wrap ${exiting ? (skipped ? 'is-skipped' : 'is-exiting') : ''}`} role="presentation">
+      <div className="intro-root">
+        {!ready && <span className="intro-loading" />}
 
-      {ready &&
-        scenes.map((s, i) => {
-          if (i !== index && i !== index - 1) return null
-          const length = (i === last ? END_AT : scenes[i + 1].at) - s.at + 0.9
-          const cam = {
-            '--fx1': s.from.x, '--fy1': s.from.y, '--z1': s.from.z,
-            '--fx2': s.to.x, '--fy2': s.to.y, '--z2': s.to.z,
-            '--dur': `${length}s`,
-          } as CSSProperties
-          return (
-            <div key={s.id} className={`intro-layer ${s.wipe}`}>
-              <div className="scene-cam" style={cam}>
-                <img className="scene-img" src={s.src} alt="" />
+        {ready &&
+          scenes.map((s, i) => {
+            if (i !== index && i !== index - 1) return null
+            const length = (i === last ? REVEAL_AT + 2 : scenes[i + 1].at + 0.9) - s.at
+            const cam = {
+              '--fx1': s.from.x, '--fy1': s.from.y, '--z1': s.from.z,
+              '--fx2': s.to.x, '--fy2': s.to.y, '--z2': s.to.z,
+              '--dur': `${length}s`,
+            } as CSSProperties
+            return (
+              <div key={s.id} className={`intro-layer ${s.wipe}`}>
+                <div className="scene-cam" style={cam}>
+                  <img className="scene-img" src={s.src} alt="" />
+                </div>
+                {i > 0 && <span className="leak" />}
+                <span className="caption-shade" />
+                <p className="caption absolute bottom-10 left-6 text-cream md:bottom-14 md:left-14">
+                  <span className="block text-xs tracking-[0.4em] text-saffron-300">{`0${i + 1} / 0${scenes.length}`}</span>
+                  <span className="mt-2 block font-display text-2xl italic md:text-4xl">{s.caption}</span>
+                </p>
               </div>
-              {i > 0 && <span className="leak" />}
-              <span className="caption-shade" />
-              <p className="caption absolute bottom-10 left-6 text-cream md:bottom-14 md:left-14">
-                <span className="block text-xs tracking-[0.4em] text-saffron-300">{`0${i + 1} / 0${scenes.length}`}</span>
-                <span className="mt-2 block font-display text-2xl italic md:text-4xl">{s.caption}</span>
-              </p>
+            )
+          })}
+
+        {ready && (
+          <>
+            <div className="vignette" />
+            <div className="grain" />
+          </>
+        )}
+
+        {ready && index === last && (
+          <div className="title-shade">
+            <span className="halo" />
+            {halo.map((h, i) => (
+              <span key={i} className="halo-star" style={{ left: `${h.left}%`, top: `${h.top}%`, width: h.size, height: h.size, animationDelay: `${h.delay}s` }}>
+                <Sparkle />
+              </span>
+            ))}
+            <div className="title-in relative text-center text-cream" style={{ animationDelay: '0.8s' }}>
+              <h1 className="font-display text-4xl font-bold sm:text-6xl md:text-8xl">
+                Saffron <span className="text-saffron-300 italic">&amp;</span> Sage
+              </h1>
+              <p className="mt-4 text-sm tracking-[0.5em] text-saffron-300 uppercase md:text-base">Dinner is served</p>
             </div>
-          )
-        })}
-
-      {ready && (
-        <>
-          <div className="vignette" />
-          <div className="grain" />
-        </>
-      )}
-
-      {ready && index === last && (
-        <div className="title-shade">
-          <div className="title-in text-center text-cream" style={{ animationDelay: '1s' }}>
-            <h1 className="font-display text-4xl font-bold sm:text-6xl md:text-8xl">
-              Saffron <span className="text-saffron-300 italic">&amp;</span> Sage
-            </h1>
-            <p className="mt-4 text-sm tracking-[0.5em] text-saffron-300 uppercase md:text-base">Dinner is served</p>
           </div>
-        </div>
-      )}
+        )}
 
-      {ready && (
-        <>
-          <div className="progress-track">
-            <div className="progress" />
-          </div>
-          <button type="button" onClick={skip} className="intro-skip">
-            Skip
-          </button>
-        </>
-      )}
+        {ready && (
+          <>
+            <div className="progress-track">
+              <div className="progress" />
+            </div>
+            <button type="button" onClick={skip} className="intro-skip">
+              Skip
+            </button>
+          </>
+        )}
+      </div>
     </div>
   )
 }
