@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react'
 import './intro.css'
 
 const base = import.meta.env.BASE_URL
-const img = (name: string) => `${base}intro/${name}.webp`
+const img = (name: string) => `${base}intro/${name}.png`
 
 type Cam = { x: number; y: number; z: number } // where the camera looks (0 to 1 across the painting) and how far it is zoomed in
 
