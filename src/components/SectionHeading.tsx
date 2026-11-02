@@ -15,7 +15,7 @@ export default function SectionHeading({ eyebrow, title, description }: SectionH
       transition={{ duration: 0.7, ease: 'easeOut' }}
       className="mx-auto max-w-2xl text-center"
     >
-      <p className="inline-flex items-center gap-3 text-sm font-medium tracking-[0.3em] text-saffron-600 uppercase">
+      <p className="inline-flex items-center gap-3 text-sm font-medium tracking-[0.3em] text-saffron-700 uppercase">
         <span className="h-px w-8 bg-saffron-500" />
         {eyebrow}
         <span className="h-px w-8 bg-saffron-500" />

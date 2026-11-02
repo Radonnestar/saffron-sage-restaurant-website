@@ -28,7 +28,7 @@ export default function Navbar() {
     >
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:h-20">
         <a
-          href="#"
+          href="#top"
           className="flex items-center gap-2 font-display text-xl font-bold text-sage-800 md:text-2xl"
         >
           <Leaf size={22} className="text-saffron-500" />
@@ -42,7 +42,7 @@ export default function Navbar() {
             <li key={link.href}>
               <a
                 href={link.href}
-                className="text-sm font-medium tracking-wide text-ink/80 transition hover:text-saffron-600"
+                className="text-sm font-medium tracking-wide text-ink/80 transition hover:text-saffron-700"
               >
                 {link.label}
               </a>

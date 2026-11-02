@@ -29,7 +29,7 @@ export default function Hero() {
         <motion.div variants={container} initial="hidden" animate="show" className="text-center lg:text-left">
           <motion.p
             variants={item}
-            className="inline-flex items-center gap-3 text-sm font-medium tracking-[0.3em] text-saffron-600 uppercase"
+            className="inline-flex items-center gap-3 text-sm font-medium tracking-[0.3em] text-saffron-700 uppercase"
           >
             <span className="h-px w-10 bg-saffron-500" />
             Modern Mediterranean
@@ -40,7 +40,7 @@ export default function Hero() {
             className="mt-5 font-display text-5xl leading-[1.05] font-bold text-sage-800 sm:text-6xl lg:text-7xl"
           >
             Seasonal food,{' '}
-            <span className="text-saffron-500 italic">slow cooked</span> with love
+            <span className="text-saffron-700 italic">slow cooked</span> with love
           </motion.h1>
 
           <motion.p variants={item} className="mx-auto mt-6 max-w-lg text-lg leading-relaxed text-ink/70 lg:mx-0">
@@ -77,7 +77,7 @@ export default function Hero() {
           >
             {facts.map((fact) => (
               <li key={fact.text} className="flex items-center gap-2">
-                <fact.icon size={17} className="text-saffron-600" />
+                <fact.icon size={17} className="text-saffron-700" />
                 {fact.text}
               </li>
             ))}

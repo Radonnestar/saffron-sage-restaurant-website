@@ -80,7 +80,7 @@ export default function FeaturedDishes() {
                   <DishArt id={dish.id} />
                 </div>
                 <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-cream/95 px-3 py-1 text-xs font-medium text-sage-800 shadow-sm">
-                  <dish.tag.icon size={14} className="text-saffron-600" />
+                  <dish.tag.icon size={14} className="text-saffron-700" />
                   {dish.tag.label}
                 </span>
               </div>
@@ -88,7 +88,7 @@ export default function FeaturedDishes() {
               <div className="p-6">
                 <div className="flex items-start justify-between gap-4">
                   <h3 className="font-display text-2xl leading-snug font-bold text-sage-800">{dish.name}</h3>
-                  <p className="font-display text-2xl font-bold text-saffron-600">{dish.price}</p>
+                  <p className="font-display text-2xl font-bold text-saffron-700">{dish.price}</p>
                 </div>
                 <p className="mt-3 leading-relaxed text-ink/70">{dish.description}</p>
               </div>

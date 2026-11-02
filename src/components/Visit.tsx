@@ -84,7 +84,7 @@ export default function Visit() {
                 )
               })}
             </ul>
-            <p className="mt-5 text-sm text-ink/55">Kitchen closes 30 minutes before closing time. Times are Dhaka time.</p>
+            <p className="mt-5 text-sm text-ink/70">Kitchen closes 30 minutes before closing time. Times are Dhaka time.</p>
           </motion.div>
 
           <motion.div
@@ -114,7 +114,7 @@ export default function Visit() {
                     <item.icon size={20} />
                   </span>
                   <div>
-                    <p className="text-xs font-medium tracking-wider text-ink/50 uppercase">{item.label}</p>
+                    <p className="text-xs font-medium tracking-wider text-ink/70 uppercase">{item.label}</p>
                     <p className="font-medium text-sage-800">{item.value}</p>
                   </div>
                 </li>

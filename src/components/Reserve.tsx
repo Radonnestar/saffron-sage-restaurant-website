@@ -116,7 +116,7 @@ function Field({
     <div>
       <label htmlFor={htmlFor} className="mb-2 block text-sm font-medium text-sage-800">
         {label}
-        {optional && <span className="font-normal text-ink/45"> (optional)</span>}
+        {optional && <span className="font-normal text-ink/70"> (optional)</span>}
       </label>
       {children}
       {error && (
@@ -319,7 +319,7 @@ export default function Reserve() {
                     Time
                   </span>
                   {!values.date ? (
-                    <p className="rounded-xl bg-sage-50 px-4 py-3 text-sm text-ink/60">Choose a date to see the times we have available.</p>
+                    <p className="rounded-xl bg-sage-50 px-4 py-3 text-sm text-ink/75">Choose a date to see the times we have available.</p>
                   ) : slots.length === 0 ? (
                     <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">We are fully booked for the rest of today. Please choose another date.</p>
                   ) : (
