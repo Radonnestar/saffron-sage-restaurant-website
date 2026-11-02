@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react'
 import './intro.css'
 
 const base = import.meta.env.BASE_URL
-const img = (name: string) => `${base}intro/${name}.png`
+const img = (name: string) => `${base}intro/${name}.webp`
 
 type Cam = { x: number; y: number; z: number } // where the camera looks (0 to 1 across the painting) and how far it is zoomed in
 
@@ -86,6 +86,7 @@ const halo = Array.from({ length: 9 }, (_, i) => {
   }
 })
 
+const MOUNT_AT = 9.2 // the website is built quietly behind the intro, so nothing heavy happens during the dissolve
 const REVEAL_AT = 10.6 // the darkness starts to dissolve
 const END_AT = 12.8 // the intro is over
 
@@ -96,12 +97,25 @@ export default function Intro({ onReveal, onDone }: { onReveal: () => void; onDo
   const [skipped, setSkipped] = useState(false)
 
   // The page behind the intro should not scroll.
+  // The strip where a scrollbar would be is painted dark, so it blends with the intro.
   useEffect(() => {
-    document.documentElement.style.overflow = 'hidden'
+    const root = document.documentElement
+    root.style.overflow = 'hidden'
+    root.style.backgroundColor = '#14110f'
     return () => {
-      document.documentElement.style.overflow = ''
+      root.style.overflow = ''
+      root.style.backgroundColor = ''
+      root.style.transition = ''
     }
   }, [])
+
+  // While the intro dissolves, that strip fades back to the page colour at the same pace.
+  useEffect(() => {
+    if (!exiting) return
+    const root = document.documentElement
+    root.style.transition = 'background-color 1.8s ease'
+    root.style.backgroundColor = ''
+  }, [exiting])
 
   // Wait until all five paintings are downloaded, so no scene ever appears half loaded.
   useEffect(() => {
@@ -125,7 +139,7 @@ export default function Intro({ onReveal, onDone }: { onReveal: () => void; onDo
     }
   }, [])
 
-  // The timeline: switch scene at the right second, let the darkness dissolve, then finish.
+  // The timeline: switch scene at the right second, build the site quietly, lift the curtain, then finish.
   useEffect(() => {
     if (!ready || skipped) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -134,12 +148,8 @@ export default function Intro({ onReveal, onDone }: { onReveal: () => void; onDo
       return
     }
     const timers = scenes.slice(1).map((s, i) => setTimeout(() => setIndex(i + 1), s.at * 1000))
-    timers.push(
-      setTimeout(() => {
-        setExiting(true)
-        onReveal()
-      }, REVEAL_AT * 1000),
-    )
+    timers.push(setTimeout(onReveal, MOUNT_AT * 1000))
+    timers.push(setTimeout(() => setExiting(true), REVEAL_AT * 1000))
     timers.push(setTimeout(onDone, END_AT * 1000))
     return () => timers.forEach(clearTimeout)
   }, [ready, skipped, onReveal, onDone])
@@ -161,67 +171,68 @@ export default function Intro({ onReveal, onDone }: { onReveal: () => void; onDo
   return (
     <div className={`intro-wrap ${exiting ? (skipped ? 'is-skipped' : 'is-exiting') : ''}`} role="presentation">
       <div className="intro-root">
-        {!ready && <span className="intro-loading" />}
+      {!ready && <span className="intro-loading" />}
 
-        {ready &&
-          scenes.map((s, i) => {
-            if (i !== index && i !== index - 1) return null
-            const length = (i === last ? REVEAL_AT + 2 : scenes[i + 1].at + 0.9) - s.at
-            const cam = {
-              '--fx1': s.from.x, '--fy1': s.from.y, '--z1': s.from.z,
-              '--fx2': s.to.x, '--fy2': s.to.y, '--z2': s.to.z,
-              '--dur': `${length}s`,
-            } as CSSProperties
-            return (
-              <div key={s.id} className={`intro-layer ${s.wipe}`}>
-                <div className="scene-cam" style={cam}>
-                  <img className="scene-img" src={s.src} alt="" />
-                </div>
-                {i > 0 && <span className="leak" />}
-                <span className="caption-shade" />
-                <p className="caption absolute bottom-10 left-6 text-cream md:bottom-14 md:left-14">
-                  <span className="block text-xs tracking-[0.4em] text-saffron-300">{`0${i + 1} / 0${scenes.length}`}</span>
-                  <span className="mt-2 block font-display text-2xl italic md:text-4xl">{s.caption}</span>
-                </p>
+      {ready &&
+        scenes.map((s, i) => {
+          if (i !== index && i !== index - 1) return null
+          const length = (i === last ? REVEAL_AT + 2 : scenes[i + 1].at + 0.9) - s.at
+          const cam = {
+            '--fx1': s.from.x, '--fy1': s.from.y, '--z1': s.from.z,
+            '--fx2': s.to.x, '--fy2': s.to.y, '--z2': s.to.z,
+            '--dur': `${length}s`,
+          } as CSSProperties
+          return (
+            <div key={s.id} className={`intro-layer ${s.wipe}`}>
+              <div className="scene-cam" style={cam}>
+                <img className="scene-img" src={s.src} alt="" />
               </div>
-            )
-          })}
-
-        {ready && (
-          <>
-            <div className="vignette" />
-            <div className="grain" />
-          </>
-        )}
-
-        {ready && index === last && (
-          <div className="title-shade">
-            <span className="halo" />
-            {halo.map((h, i) => (
-              <span key={i} className="halo-star" style={{ left: `${h.left}%`, top: `${h.top}%`, width: h.size, height: h.size, animationDelay: `${h.delay}s` }}>
-                <Sparkle />
-              </span>
-            ))}
-            <div className="title-in relative text-center text-cream" style={{ animationDelay: '0.8s' }}>
-              <h1 className="font-display text-4xl font-bold sm:text-6xl md:text-8xl">
-                Saffron <span className="text-saffron-300 italic">&amp;</span> Sage
-              </h1>
-              <p className="mt-4 text-sm tracking-[0.5em] text-saffron-300 uppercase md:text-base">Dinner is served</p>
+              {i > 0 && <span className="leak" />}
+              <span className="caption-shade" />
+              <p className="caption absolute bottom-10 left-6 text-cream md:bottom-14 md:left-14">
+                <span className="block text-xs tracking-[0.4em] text-saffron-300">{`0${i + 1} / 0${scenes.length}`}</span>
+                <span className="mt-2 block font-display text-2xl italic md:text-4xl">{s.caption}</span>
+              </p>
             </div>
+          )
+        })}
+
+      {ready && (
+        <>
+          <div className="vignette" />
+          <div className="grain" />
+        </>
+      )}
+
+      {ready && index === last && (
+        <div className="title-shade">
+          <span className="halo" />
+          {halo.map((h, i) => (
+            <span key={i} className="halo-star" style={{ left: `${h.left}%`, top: `${h.top}%`, width: h.size, height: h.size, animationDelay: `${h.delay}s` }}>
+              <Sparkle />
+            </span>
+          ))}
+          <div className="title-in relative text-center text-cream" style={{ animationDelay: '0.8s' }}>
+            <h1 className="font-display text-4xl font-bold sm:text-6xl md:text-8xl">
+              Saffron <span className="text-saffron-300 italic">&amp;</span> Sage
+            </h1>
+            <p className="mt-4 text-sm tracking-[0.5em] text-saffron-300 uppercase md:text-base">Dinner is served</p>
           </div>
-        )}
+        </div>
+      )}
 
-        {ready && (
-          <>
-            <div className="progress-track">
-              <div className="progress" />
-            </div>
-            <button type="button" onClick={skip} className="intro-skip">
-              Skip
-            </button>
-          </>
-        )}
+      {ready && (
+        <>
+          <div className="progress-track">
+            <div className="progress" />
+          </div>
+          <button type="button" onClick={skip} className="intro-skip">
+            Skip
+          </button>
+        </>
+      )}
       </div>
+
     </div>
   )
 }
