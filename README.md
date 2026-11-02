@@ -1,32 +1,23 @@
-# React + TypeScript + Vite
+# Saffron & Sage – Restaurant Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+An elegant restaurant website with a cinematic 12-second painted intro, featured dishes, a tabbed menu, photo gallery with lightbox, live "Open now" opening hours (Dhaka time), and a reservation enquiry form with date and time-slot validation.
 
-Currently, two official plugins are available:
+**Live demo:** _add your Vercel link here_
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
+- Calm, painted intro with a Skip button (respects reduced-motion)
+- Featured dishes and a category-tabbed menu with dietary tags
+- Gallery with accessible lightbox
+- Opening hours that highlight today and show Open / Closed live
+- Reservation form: smart time slots, guest stepper, validation, confirmation reference
+- Fully responsive, keyboard accessible, zero axe-core violations
 
-## React Compiler
+## Tech stack
+React 19 · Vite · TypeScript · Tailwind CSS v4 · Motion · Lucide React
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Run locally
+```bash
+npm install
+npm run dev
 ```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Build for production with `npm run build`.
