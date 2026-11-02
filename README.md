@@ -2,7 +2,7 @@
 
 An elegant restaurant website with a cinematic 12-second painted intro, featured dishes, a tabbed menu, photo gallery with lightbox, live "Open now" opening hours (Dhaka time), and a reservation enquiry form with date and time-slot validation.
 
-**Live demo:** _add your Vercel link here_
+**Live demo:** https://saffron-sage-restaurant-website.vercel.app/
 
 ## Features
 - Calm, painted intro with a Skip button (respects reduced-motion)
